@@ -164,6 +164,7 @@ struct VSyncInfo
 	bool force_progressive;
 	// If true, includes the overscan area. This results in black borders.
 	bool overscan;
+	bool overscan_horizontal;
 	// Tries to counteract field blending.
 	// For force_progressive or super-sampling, setting this to true is usually a good idea.
 	bool anti_blur;

@@ -4253,6 +4253,7 @@ ScanoutResult GSRenderer::vsync(const PrivRegisterState &priv, const VSyncInfo &
 	const bool force_progressive = info.force_progressive;
 	// True to include the overscan area.
 	const bool overscan = info.overscan;
+	const bool overscan_horizontal = overscan && info.overscan_horizontal;
 	// Tries to counteract field blending. It's just a blur that is overkill.
 	const bool anti_blur = info.anti_blur;
 	bool high_resolution_scanout = info.high_resolution_scanout;
@@ -4301,20 +4302,10 @@ ScanoutResult GSRenderer::vsync(const PrivRegisterState &priv, const VSyncInfo &
 	     (priv.smode1.CMOD == SMODE1Bits::CMOD_PROGRESSIVE && !priv.smode2.INT)) &&
 	    priv.smode1.LC == SMODE1Bits::LC_ANALOG)
 	{
-		if (overscan)
-		{
-			mode_width = 712;
-			mode_height = 240;
-			scan_offset_x = 123;
-			scan_offset_y = 17;
-		}
-		else
-		{
-			mode_width = 640;
-			mode_height = 224;
-			scan_offset_x = 159;
-			scan_offset_y = 25;
-		}
+		mode_width = overscan_horizontal ? 712 : 640;
+		scan_offset_x = overscan_horizontal ? 123 : 159;
+		mode_height = overscan ? 240 : 224;
+		scan_offset_y = overscan ? 17 : 25;
 
 		if (!is_interlaced && !double_strike && !force_deinterlace)
 		{
@@ -4330,20 +4321,10 @@ ScanoutResult GSRenderer::vsync(const PrivRegisterState &priv, const VSyncInfo &
 	}
 	else if (priv.smode1.CMOD == SMODE1Bits::CMOD_PROGRESSIVE && priv.smode1.LC == SMODE1Bits::LC_VESA_640x480)
 	{
-		if (overscan)
-		{
-			mode_width = 714;
-			mode_height = 520;
-			scan_offset_x = 101;
-			scan_offset_y = 14;
-		}
-		else
-		{
-			mode_width = 640;
-			mode_height = 480;
-			scan_offset_x = 138;
-			scan_offset_y = 34;
-		}
+		mode_width = overscan_horizontal ? 714 : 640;
+		scan_offset_x = overscan_horizontal ? 101 : 138;
+		mode_height = overscan ? 520 : 480;
+		scan_offset_y = overscan ? 14 : 34;
 
 		clock_divider = SMODE1Bits::CLOCK_DIVIDER_COMPONENT;
 		insert_label(cmd, "VESA 640x480p");
@@ -4352,20 +4333,10 @@ ScanoutResult GSRenderer::vsync(const PrivRegisterState &priv, const VSyncInfo &
 	{
 		// TODO: Does PAL output support progressive scan? I seem to recall PAL PS2s would output NTSC progressive
 		// back in the day, but most TVs supported it ...
-		if (overscan)
-		{
-			mode_width = 712;
-			mode_height = 288;
-			scan_offset_x = 133;
-			scan_offset_y = 21;
-		}
-		else
-		{
-			mode_width = 640;
-			mode_height = 256;
-			scan_offset_x = 169;
-			scan_offset_y = 36;
-		}
+		mode_width = overscan_horizontal ? 712 : 640;
+		scan_offset_x = overscan_horizontal ? 133 : 169;
+		mode_height = overscan ? 288 : 256;
+		scan_offset_y = overscan ? 21 : 36;
 
 		if (!is_interlaced && !double_strike && !force_deinterlace)
 		{
@@ -4691,15 +4662,15 @@ ScanoutResult GSRenderer::vsync(const PrivRegisterState &priv, const VSyncInfo &
 		crtc_shift.y = std::min<int32_t>(off_y, crtc_shift.y);
 	}
 
-	if (!info.overscan && !info.crtc_offsets)
+	if (!info.crtc_offsets)
 	{
-		if (!skip_shift_x)
+		if (!overscan_horizontal && !skip_shift_x)
 		{
 			crtc_rects[0].offset.x -= crtc_shift.x;
 			crtc_rects[1].offset.x -= crtc_shift.x;
 		}
 
-		if (!skip_shift_y)
+		if (!overscan && !skip_shift_y)
 		{
 			crtc_rects[0].offset.y -= crtc_shift.y;
 			crtc_rects[1].offset.y -= crtc_shift.y;

@@ -175,6 +175,7 @@ bool GSDumpParser::iterate_until_vsync(bool high_res_scanout, bool conservative_
 				vsync.skip_deinterlace = true;
 				vsync.crtc_offsets = true;
 				vsync.overscan = true;
+				vsync.overscan_horizontal = true;
 			}
 			else
 			{
